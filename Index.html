@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Brian Tech ❤️ Romantic Hacker App</title>
+<style>
+  /* RESET & BASE */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body, html {
+    height: 100%;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+    background: black;
+    color: #0f0;
+  }
+
+  /* BACKGROUND VIDEO */
+  #bg-video {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    object-fit: cover;
+    filter: brightness(0.3) contrast(1.1);
+    z-index: -2;
+  }
+
+  /* COMMON CENTERING FLEX */
+  .center-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* LOGIN SCREEN */
+  #login-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.9);
+    z-index: 100;
+    flex-direction: column;
+    color: #0f0;
+  }
+  #login-screen.hidden {
+    display: none;
+  }
+  #login-box {
+    background: #111;
+    border-radius: 20px;
+    padding: 30px 40px;
+    box-shadow: 0 0 15px #0f0;
+    flex-direction: column;
+    display: flex;
+    width: 320px;
+  }
+  #login-box h2 {
+    margin-bottom: 20px;
+    text-align: center;
+    text-shadow: 0 0 5px #0f0;
+  }
+  #login-box input {
+    background: #222;
+    border: none;
+    color: #0f0;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+  }
+  #login-box button {
+    background: #0f0;
+    color: black;
+    font-weight: 700;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 0 15px #0f0;
+    transition: background 0.3s ease;
+  }
+  #login-box button:hover {
+    background: #6f6;
+  }
+  #forgot-pass {
+    color: #0f0;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 10px;
+    user-select: none;
+  }
+  #forgot-pass:hover {
+    text-decoration: underline;
+  }
+  #forgot-msg {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #f00;
+    display: none;
+    text-align: center;
+  }
+
+  /* TERMINAL + MATRIX + LOADING */
+  #terminal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: transparent;
+    overflow: hidden;
+    font-size: 16px;
+    line-height: 1.3;
+    color: #0f0;
+    z-index: 5;
+  }
+  canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 0;
+  }
+  #loading-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: 24px;
+    text-shadow: 0 0 8px #0f0;
+    z-index: 10;
+  }
+
+  /* LOVE MESSAGE */
+  #love-message {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff2a68;
+    font-weight: 900;
+    font-size: 32px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    text-shadow:
+      0 0 5px #ff2a68,
+      0 0 10px #ff2a68,
+      0 0 20px #ff2a68,
+      0 0 40px #ff2a68;
+    z-index: 15;
+  }
+
+  /* BUTTONS UNDER LOVE MESSAGE */
+  #action-buttons {
+    position: fixed;
+    top: calc(50% + 140px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 15;
+  }
+  #action-buttons.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .btn-main {
+    background: #ff2a68;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    box-shadow:
+      0 0 8px #ff2a68,
+      0 0 20px #ff2a68;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  .btn-main:hover {
+    background: #ff507a;
+  }
+
+  /* FLOATING HEARTS */
+  .heart {
+    position: fixed;
+    font-size: 24px;
+    color: #ff2a68;
+    animation: floatUp 4s linear forwards;
+    user-select: none;
+    pointer-events: none;
+    text-shadow: 0 0 10px #ff2a68;
+  }
+  @keyframes floatUp {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-150px) scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  /* MESSAGING SCREEN */
+  #messaging-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.9);
+    color: #0f0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 30;
+  }
+  #messaging-screen.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  #back-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #ff2a68;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 10px #ff2a68;
+    user-select: none;
+    transition: background 0.3s ease;
+    z-index: 35;
+  }
+  #back-btn:hover {
+    background: #ff507a;
+  }
+
+  #chat-container {
+    margin-top: 60px;
+    background: #111;
+    border-radius: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+    width: 75vw; /* 3/4 screen width */
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    box-shadow: 0 0 20px #ff2a68;
+    overflow-y: auto;
+  }
+  #chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px;
+    font-size: 16px;
+  }
+  .chat-message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: #222;
+    border-radius: 10px;
+    max-width: 70%;
+    color: #0f0;
+    word-wrap: break-word;
+  }
+
+  #chat-input-row {
+    display: flex;
+    margin-top: 15px;
+  }
+  #message-input {
+    flex-grow: 1;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 12px 0 0 12px;
+    border: none;
+    background: #222;
+    color: #0f0;
+  }
+  #send-btn {
+    background: #ff2a68;
+    border: none;
+    padding: 0 24px;
+    font-size: 18px;
+    border-radius: 0 12px 12px 0;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 15px #ff2a68;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  #send-btn:hover {
+    background: #ff507a;
+  }
+
+  /* LOVE QUOTES & COMEDY QUOTES section */
+  #quotes-section {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    max-width: 900px;
+    width: 75vw;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 20px #ff2a68;
+    color: #ff2a68;
+    font-size: 18px;
+    line-height: 1.4;
+    text-align: center;
+    user-select: none;
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+  }
+  #quotes-section.active {
+    display: flex;
+  }
+  #quotes-text {
+    margin-bottom: 12px;
+    min-height: 50px;
+  }
+  #quotes-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  .btn-quote {
+    background: #ff2a68;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 0 10px #ff2a68;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  .btn-quote:hover {
+    background: #ff507a;
+  }
+
+  /* SECRET PHOTO STORAGE */
+  #photo-storage {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.95);
+    color: #ff2a68;
+    padding: 30px 20px 20px;
+    box-sizing: border-box;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease-in-out;
+    overflow-y: auto;
+  }
+  #photo-storage.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+  #photo-storage h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 900;
+    text-shadow: 0 0 10px #ff2a68;
+  }
+  #photo-password-prompt {
+    max-width: 300px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 10px;
+  }
+  #photo-password-prompt input {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #222;
+    color: #ff2a68;
+  }
+  #photo-password-prompt button {
+    background: #ff2a68;
+    border: none;
+    color: white;
+    border-radius: 12px;
+    padding: 10px 18px;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 0 15px #ff2a68;
+    user-select: none;
+    transition: background 0.3s ease;
+  }
+  #photo-password-prompt button:hover {
+    background: #ff507a;
+  }
+  #photo-upload-input {
+    display: block;
+    margin: 0 auto 20px;
+  }
+  #photo-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  #photo-gallery img {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px #ff2a68;
+    cursor: pointer;
+    object-fit: cover;
+  }
+  #photo-storage-close {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: #ff2a68;
+    color: white;
+    border: none
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 10px #ff2a68;
+    user-select: none;
+  }
+  #photo-storage-close:hover {
+    background: #ff507a;
+  }
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND VIDEO -->
+<video autoplay muted loop id="bg-video" playsinline>
+  <source src="https://files.catbox.moe/70j65p.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="center-flex">
+  <div id="login-box" class="center-flex">
+    <h2>Login to Brian Tech ❤️</h2>
+    <input type="text" id="username" placeholder="Username" autocomplete="off" />
+    <input type="password" id="password" placeholder="Password" autocomplete="off" />
+    <button id="login-btn">Login</button>
+    <div id="forgot-pass">Forgot Password?</div>
+    <div id="forgot-msg"></div>
+  </div>
+</div>
+
+<!-- TERMINAL + MATRIX + LOADING -->
+<div id="terminal">
+  <canvas id="matrix"></canvas>
+  <div id="loading-text">Decrypting Mera-B’s heart data...</div>
+</div>
+
+<!-- LOVE MESSAGE -->
+<div id="love-message">❤️ Welcome to Brian Tech's Secret World ❤️</div>
+
+<!-- ACTION BUTTONS -->
+<div id="action-buttons">
+  <button class="btn-main" id="btn-message">Messaging</button>
+  <button class="btn-main" id="btn-love-quote">Love Quotes</button>
+  <button class="btn-main" id="btn-funny-quote">Comedy Quotes</button>
+  <button class="btn-main" id="btn-photo-storage">Secret Photo Storage</button>
+</div>
+
+<!-- MESSAGING SCREEN -->
+<div id="messaging-screen">
+  <button id="back-btn">← Back</button>
+  <div id="chat-container">
+    <div id="chat-messages"></div>
+    <div id="chat-input-row">
+      <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTES SECTION -->
+<div id="quotes-section">
+  <div id="quotes-text"></div>
+  <div id="quotes-buttons">
+    <button class="btn-quote" id="btn-new-quote">New Quote</button>
+    <button class="btn-quote" id="btn-close-quotes">Close</button>
+  </div>
+</div>
+
+<!-- SECRET PHOTO STORAGE -->
+<div id="photo-storage">
+  <h2>Secret Photo Storage 💾</h2>
+  <div id="photo-password-prompt">
+    <input type="password" id="photo-storage-password" placeholder="Enter password to access" autocomplete="off" />
+    <button id="photo-pass-submit">Enter</button>
+  </div>
+  <input type="file" id="photo-upload-input" accept="image/*" multiple />
+  <div id="photo-gallery"></div>
+  <button id="photo-storage-close">Close</button>
+</div>
+
+<script>
+  // ===== LOGIN LOGIC =====
+  const loginScreen = document.getElementById('login-screen');
+  const loginBtn = document.getElementById('login-btn');
+  const forgotPassBtn = document.getElementById('forgot-pass');
+  const forgotMsg = document.getElementById('forgot-msg');
+  const USERNAME = "Brian tech";
+  const PASSWORD = "#briantech@01";
+
+  loginBtn.addEventListener('click', () => {
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    if (u === USERNAME && p === PASSWORD) {
+      loginScreen.classList.add('hidden');
+      startTerminalAnimation();
+      showLoveMessage();
+    } else {
+      alert('Invalid credentials!');
+    }
+  });
+
+  forgotPassBtn.addEventListener('click', () => {
+    forgotMsg.style.display = 'block';
+    forgotMsg.textContent = "Password retrieval not implemented yet. Try remembering it 😉";
+  });
+
+  // ===== TERMINAL MATRIX ANIMATION =====
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  let columns;
+  let drops = [];
+
+  function resizeCanvas() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / 20);
+    drops = Array(columns).fill(1);
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#0f0';
+    ctx.font = '20px monospace';
+
+    for(let i = 0; i < drops.length; i++) {
+      const text = String.fromCharCode(0x30A0 + Math.random() * 96);
+      ctx.fillText(text, i * 20, drops[i] * 20);
+      if (drops[i] * 20 > height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  let matrixInterval;
+  function startTerminalAnimation() {
+    const loadingText = document.getElementById('loading-text');
+    loadingText.style.opacity = '1';
+    let progress = 0;
+    let progressInterval = setInterval(() => {
+      progress += 5;
+      loadingText.textContent = `Decrypting Mera-B’s heart data... ${progress}%`;
+      if (progress >= 100) {
+        clearInterval(progressInterval);
+        loadingText.style.opacity = '0';
+        matrixInterval = setInterval(drawMatrix, 50);
+      }
+    }, 100);
+  }
+
+  // ===== LOVE MESSAGE & BUTTONS =====
+  const loveMessage = document.getElementById('love-message');
+  const actionButtons = document.getElementById('action-buttons');
+
+  function showLoveMessage() {
+    setTimeout(() => {
+      loveMessage.style.opacity = '1';
+      actionButtons.classList.add('active');
+      startFloatingHearts();
+    }, 3500);
+  }
+
+  // FLOATING HEARTS
+  function startFloatingHearts() {
+    setInterval(() => {
+      const heart = document.createElement('div');
+      heart.textContent = '❤️';
+      heart.className = 'heart';
+      heart.style.left = Math.random() * window.innerWidth + 'px';
+      heart.style.fontSize = 14 + Math.random() * 20 + 'px';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 4000);
+    }, 600);
+  }
+
+  // ===== MESSAGING SCREEN =====
+  const messagingScreen = document.getElementById('messaging-screen');
+  const btnMessage = document.getElementById('btn-message');
+  const backBtn = document.getElementById('back-btn');
+  const chatMessages = document.getElementById('chat-messages');
+  const messageInput = document.getElementById('message-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  btnMessage.addEventListener('click', () => {
+    messagingScreen.classList.add('active');
+    loveMessage.style.opacity = '0';
+    actionButtons.classList.remove('active');
+  });
+  backBtn.addEventListener('click', () => {
+    messagingScreen.classList.remove('active');
+    loveMessage.style.opacity = '1';
+    actionButtons.classList.add('active');
+  });
+
+  sendBtn.addEventListener('click', sendMessage);
+  messageInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  function sendMessage() {
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+    appendChatMessage('You', msg);
+    messageInput.value = '';
+    // Auto-reply example:
+    setTimeout(() => {
+      appendChatMessage('Mera-B', generateAutoReply());
+    }, 800);
+  }
+
+  function appendChatMessage(sender, text) {
+    const div = document.createElement('div');
+    div.className = 'chat-message';
+    div.textContent = `${sender}: ${text}`;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function generateAutoReply() {
+    const replies = [
+      "I’m always here for you ❤️",
+      "Tell me more about your day 😘",
+      "You make my circuits flutter! 💓",
+      "Love you to bits and bytes 💾",
+      "Keep shining, star 🌟",
+      "You’re my favorite notification 🔔",
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+
+  // ===== QUOTES SECTION =====
+  const quotesSection = document.getElementById('quotes-section');
+  const quotesText = document.getElementById('quotes-text');
+  const btnLoveQuote = document.getElementById('btn-love-quote');
+  const btnFunnyQuote = document.getElementById('btn-funny-quote');
+  const btnNewQuote = document.getElementById('btn-new-quote');
+  const btnCloseQuotes = document.getElementById('btn-close-quotes');
+
+  const loveQuotes = [
+    "You are the code to my heart ❤️",
+    "Every moment with you is a perfect compile.",
+    "In the algorithm of love, you're my constant.",
+    "You're the only bug I never want to fix.",
+    "Our love runs smoother than optimized code.",
+    "You debug my soul, one smile at a time.",
+  ];
+  const funnyQuotes = [
+    "Why do programmers prefer dark mode? Because light attracts bugs! 😂",
+    "I told my computer I needed a break, now it won’t stop sending me Kit-Kats.",
+    "You had me at 'Hello World!'",
+    "I love you like a programmer loves semicolons — sometimes unnecessary, but always there.",
+    "If love was a program, you’d be the main function!",
+    "My love for you is like a recursive function — it never ends!",
+  ];
+
+  let currentQuotesArray = [];
+
+  btnLoveQuote.addEventListener('click', () => {
+    currentQuotesArray = loveQuotes;
+    showQuotes();
+  });
+
+  btnFunnyQuote.addEventListener('click', () => {
+    currentQuotesArray = funnyQuotes;
+    showQuotes();
+  });
+
+  btnNewQuote.addEventListener('click', () => {
+    const randomIndex = Math.floor(Math.random() * currentQuotesArray.length);
+    quotesText.textContent = currentQuotesArray[randomIndex];
+  });
+
+  btnCloseQuotes.addEventListener('click', () => {
+    quotesSection.classList.remove('active');
+    loveMessage.style.opacity = '1';
+    actionButtons.classList.add('active');
+  });
+
+  function showQuotes() {
+    quotesSection.classList.add('active');
+    loveMessage.style.opacity = '0';
+    actionButtons.classList.remove('active');
+    btnNewQuote.click();
+  }
+
+  // ===== SECRET PHOTO STORAGE =====
+  const btnPhotoStorage = document.getElementById('btn-photo-storage');
+  const photoStorage = document.getElementById('photo-storage');
+  const photoStorageClose = document.getElementById('photo-storage-close');
+  const photoPassSubmit = document.getElementById('photo-pass-submit');
+  const photoStoragePasswordInput = document.getElementById('photo-storage-password');
+  const photoUploadInput = document.getElementById('photo-upload-input');
+  const photoGallery = document.getElementById('photo-gallery');
+
+  const PHOTO_STORAGE_PASS = "meraBsecret";
+
+  btnPhotoStorage.addEventListener('click', () => {
+    // Show photo storage with password prompt
+    photoStorage.classList.add('active');
+    loveMessage.style.opacity = '0';
+    actionButtons.classList.remove('active');
+    messagingScreen.classList.remove('active');
+    clearPhotoStorage();
+  });
+
+  photoStorageClose.addEventListener('click', () => {
+    photoStorage.classList.remove('active');
+    loveMessage.style.opacity = '1';
+    actionButtons.classList.add('active');
+  });
+
+  photoPassSubmit.addEventListener('click', () => {
+    if (photoStoragePasswordInput.value === PHOTO_STORAGE_PASS) {
+      alert("Access granted! You can now upload and view photos.");
+      photoUploadInput.style.display = 'block';
+      photoPasswordValid = true;
+    } else {
+      alert("Wrong password! Access denied.");
+      photoUploadInput.style.display = 'none';
+      photoPasswordValid = false;
+    }
+    photoStoragePasswordInput.value = '';
+  });
+
+  let photoPasswordValid = false;
+
+  photoUploadInput.style.display = 'none';
+
+  photoUploadInput.addEventListener('change', (e) => {
+    if (!photoPasswordValid) {
+      alert("Enter the correct password first!");
+      photoUploadInput.value = '';
+      return;
+    }
+    const files = e.target.files;
+    for (const file of files) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        photoGallery.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+    photoUploadInput.value = '';
+  });
+
+  function clearPhotoStorage() {
+    photoGallery.innerHTML = '';
+    photoUploadInput.style.display = 'none';
+    photoPasswordValid = false;
+    photoStoragePasswordInput.value = '';
+  }
+</script>
+
+</body>
+</html>
